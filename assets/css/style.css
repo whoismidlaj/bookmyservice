@@ -1,0 +1,43 @@
+.book-my-service-login-signup {
+    display: flex;
+    justify-content: space-between;
+}
+
+.book-my-service-login-signup div {
+    width: 45%;
+}
+
+.bms_booking_wrapper {
+    border: 1px solid;
+    padding: 2em;
+    box-sizing: border-box;
+}
+
+.login-signup-switch  {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-signup-switch span {
+    padding: 0.5em 1em;
+    border: 1px solid;
+}
+
+.login-signup-switch span.active {
+    background-color: black;
+    color: white;
+    border: 1px solid black;
+}
+
+form label {
+    display: block;
+}
+
+form input,
+form select {
+    width: 100%;
+    max-width: 100%;
+    padding: 1em;
+    box-sizing: border-box;
+}
