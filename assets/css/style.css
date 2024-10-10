@@ -10,6 +10,7 @@
 .bms_booking_wrapper {
     border: 1px solid;
     padding: 2em;
+    margin: 0;
     box-sizing: border-box;
 }
 
@@ -30,14 +31,37 @@
     border: 1px solid black;
 }
 
-form label {
+.bms_booking_wrapper form label {
     display: block;
 }
 
-form input,
-form select {
+.bms_booking_wrapper form input,
+.bms_booking_wrapper form select,
+.bms_booking_wrapper form textarea {
     width: 100%;
     max-width: 100%;
     padding: 1em;
     box-sizing: border-box;
+    background-color: inherit;
+    border: 1px solid;
+}
+
+.bms_booking_wrapper .nice-select {
+    width: 100%;
+    margin-bottom: 2em;
+    border-radius: 0;
+    border: 1px solid;
+    background: initial;
+}
+.bms_booking_wrapper .nice-select .list {
+    width: 100%;
+    background-color: #f9f9f9;
+    border: 1px solid;
+    border-radius: 0;
+}
+
+.bms_booking_wrapper .nice-select .option.focus,
+.bms_booking_wrapper .nice-select .option.selected.focus,
+.bms_booking_wrapper .nice-select .option:hover {
+    background-color: #f9f9f9;
 }

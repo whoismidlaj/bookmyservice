@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 function bms_admin_page() {
     ?>
-    <div class="wrap">
+    <div class="wrap bms_options">
         <h1>Book My Service Admin</h1>
         <h2 class="nav-tab-wrapper">
             <a href="?page=book-my-service&tab=bookings" class="nav-tab <?php echo ( isset( $_GET['tab']) && $_GET['tab'] === 'bookings' ) ? 'nav-tab-active' : ''; ?>">Bookings</a>
@@ -34,7 +34,7 @@ function display_bookings() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'bookings';
 
-    $bookings = $wpdb->get_results("SELECT b.id, b.service, b.booking_time, u.user_email, u.ID as user_id FROM $table_name b JOIN $wpdb->users u ON b.user_id = u.ID ORDER BY b.booking_time DESC", ARRAY_A);
+    $bookings = $wpdb->get_results("SELECT b.id, b.service, b.booking_time, b.message,u.user_email, u.ID as user_id FROM $table_name b JOIN $wpdb->users u ON b.user_id = u.ID ORDER BY b.booking_time DESC", ARRAY_A);
 
     if (!empty($bookings)) {
         echo '<h2>All Bookings</h2>';
@@ -46,6 +46,7 @@ function display_bookings() {
         echo '<th scope="col">Phone</th>';
         echo '<th scope="col">Service Selected</th>';
         echo '<th scope="col">Booking Time</th>';
+        echo '<th scope="col">Message</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -59,7 +60,8 @@ function display_bookings() {
             echo '<td>' . esc_html($booking['user_email']) . '</td>';
             echo '<td>' . esc_html($phone) . '</td>';
             echo '<td>' . esc_html($booking['service']) . '</td>';
-            echo '<td>' . esc_html(date('Y-m-d H:i', strtotime($booking['booking_time']))) . '</td>';
+            echo '<td>' . esc_html(date('F j, Y, g:i A', strtotime($booking['booking_time']))) . '</td>';
+            echo '<td>' . esc_html($booking['message']) . '</td>';
             echo '</tr>';
         }
         
@@ -71,39 +73,25 @@ function display_bookings() {
 }
 
 function bms_other_options() {
-    bms_save_mailerlite_settings();
-
     bms_add_service();
-
     bms_delete_service();
+    bms_submission_email();
 
-    $mailerlite_api_key = get_option('mailerlite_api_key', '');
-    $mailerlite_group_id = get_option('mailerlite_group_id', '');
     $services = get_option('bms_services', array());
+    $email = get_option('bms_admin_email', '');
 
-    echo '<h2>Options</h2>';
-    echo '<p>This is where other settings or options can be managed.</p>';
-    
-    echo '<form method="POST" action="">';
-    echo '<table class="form-table">';
-    
-    echo '<tr>';
-    echo '<th scope="row"><label for="mailerlite_api_key">MailerLite API Key</label></th>';
-    echo '<td><input type="text" id="mailerlite_api_key" name="mailerlite_api_key" value="' . esc_attr($mailerlite_api_key) . '" class="regular-text"></td>';
-    echo '</tr>';
-    
-    echo '<tr>';
-    echo '<th scope="row"><label for="mailerlite_group_id">MailerLite Group ID</label></th>';
-    echo '<td><input type="text" id="mailerlite_group_id" name="mailerlite_group_id" value="' . esc_attr($mailerlite_group_id) . '" class="regular-text"></td>';
-    echo '</tr>';
-    
-    echo '</table>';
-    echo '<p><input type="submit" name="submit" class="button-primary" value="Save Settings"></p>';
+    echo '<h1>Options</h1>';
+
+    echo '<h2>Submission Email</h2>';
+    echo '<p>Enter the email address where you want to receive booking notifications.</p>';
+    echo '<form method="POST" action="" style="display:inline;">';
+    echo '<input type="email" id="bms_email" name="bms_email" value="' . esc_attr($email) . '" required>';
+    echo '<input type="submit" value="Save Email">';
     echo '</form>';
 
     echo '<h2>Services List</h2>';
     if (!empty($services)) {
-        echo '<table class="form-table" style="width:100%;">';
+        echo '<table class="form-table bms_services_list">';
         echo '<thead><tr><th>Service</th><th>Action</th></tr></thead>';
         echo '<tbody>';
         foreach ($services as $key => $service) {

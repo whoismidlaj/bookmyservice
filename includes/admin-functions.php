@@ -19,7 +19,7 @@ function bms_add_admin_menu() {
 add_action( 'admin_menu', 'bms_add_admin_menu' );
 
 function bms_enqueue_admin_assets() {
-    wp_enqueue_style( 'bms-admin-styles', plugin_dir_url( __FILE__ ) . 'assets/css/admin-style.css' );
+    wp_enqueue_style( 'bms-admin-styles', plugin_dir_url( __FILE__ ) . '../assets/css/admin-style.css' );
 }
 add_action( 'admin_enqueue_scripts', 'bms_enqueue_admin_assets' );
 
@@ -38,18 +38,6 @@ function bms_user_list() {
     }
 
     echo '</tbody></table>';
-}
-
-function bms_save_mailerlite_settings() {
-    if (isset($_POST['submit'])) {
-        $mailerlite_api_key = sanitize_text_field($_POST['mailerlite_api_key']);
-        $mailerlite_group_id = sanitize_text_field($_POST['mailerlite_group_id']);
-
-        update_option('mailerlite_api_key', $mailerlite_api_key);
-        update_option('mailerlite_group_id', $mailerlite_group_id);
-
-        add_settings_error('bms_mailerlite_settings', 'mailerlite_settings_saved', 'MailerLite API key and Group ID saved successfully.', 'updated');
-    }
 }
 
 function bms_add_service() {
@@ -75,5 +63,14 @@ function bms_delete_service() {
             update_option('bms_services', $services);
             add_settings_error('bms_service_settings', 'service_deleted', 'Service deleted successfully.', 'updated');
         }
+    }
+}
+
+function bms_submission_email() {
+    if (isset($_POST['bms_email'])) {
+        $email = sanitize_email($_POST['bms_email']);
+        update_option('bms_admin_email', $email);
+    
+        echo '<p>Email saved successfully: ' . esc_html($email) . '</p>';
     }
 }

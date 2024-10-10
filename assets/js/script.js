@@ -1,4 +1,6 @@
 jQuery(document).ready(function($) {
+    $(".bms_booking_wrapper select").niceSelect();
+    
     // Registration Form Submission
     $('#bms-registration-form').on('submit', function(e) {
         e.preventDefault();

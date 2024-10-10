@@ -5,3 +5,25 @@
 .nav-tab-wrapper {
     margin-bottom: 20px;
 }
+
+.bms_options h2 {
+    margin-bottom: 2em;
+}
+
+.bms_options .form-table {
+    max-width: 100%;
+    width: fit-content;
+}
+
+.bms_options .bms_services_list {
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    margin-bottom: 2em;
+}
+
+.bms_options .form-table th {
+    padding: 15px 10px;
+}
+
+.bms_options thead {
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+}

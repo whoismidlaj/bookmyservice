@@ -1,16 +1,33 @@
 <div class="bms_booking_wrapper">
     <?php
     if (is_user_logged_in()) {
-        echo '<h3>You are already logged in. Start booking your service.</h3>';
+        $user_id = get_current_user_id();
+        
+        // echo '<h3>Your Booked Services:</h3>';
+        // $user_booked_services = bms_get_user_booked_services($user_id); // Fetch booked services
+        
+        // if (!empty($user_booked_services)) {
+        //     echo '<ul>';
+        //     foreach ($user_booked_services as $service) {
+        //         echo '<li>' . esc_html($service->service) . ' - ' . esc_html($service->booking_time) . '</li>';
+        //     }
+        //     echo '</ul>';
+        // } else {
+        //     echo '<p>You have not booked any services yet.</p>';
+        // }
+
+        // echo '<div>';
+        echo '<h3>Book your service.</h3>';
 
         if (isset($_POST['service'])) {
             $selected_service = sanitize_text_field($_POST['service']);
-            $user_id = get_current_user_id();
+            $message = sanitize_textarea_field($_POST['message']);
 
             $booking_data = array(
                 'user_id'       => $user_id,
                 'service'       => $selected_service,
                 'booking_time'  => current_time('mysql'),
+                'message' => $message,
             );
 
             global $wpdb;
@@ -21,12 +38,22 @@
             user_id BIGINT(20) NOT NULL,
             service VARCHAR(255) NOT NULL,
             booking_time DATETIME NOT NULL,
+            message  TEXT NOT NULL,
             PRIMARY KEY (id)
         )");
 
             $wpdb->insert($table_name, $booking_data);
+            bms_send_booking_email($booking_data);
 
-            echo '<div class="updated"><p>Your booking for "' . esc_html($selected_service) . '" has been successfully saved.</p></div>';
+            wp_redirect(add_query_arg(array(
+                'booking' => 'success',
+                'service' => $selected_service,
+            ), $_SERVER['REQUEST_URI']));
+            exit;
+        }
+
+        if (isset($_GET['booking']) && $_GET['booking'] === 'success' && isset($_GET['service'])) {
+            echo '<div class="updated"><p>Your booking for "' . esc_html($_GET['service']) . '" has been successfully submitted.</p></div>';
         }
 
         $services = get_option('bms_services', array());
@@ -44,10 +71,15 @@
         }
 
         echo '  </select>
+        <p>
+            <label for="message">Additional Message</label>
+            <textarea name="message" id="message" rows="5" cols="40"></textarea>
+        </p>
             <p><input type="submit" value="Book Service"></p>
           </form>';
 
         echo '<p><a href="' . wp_logout_url(home_url('/booking')) . '">Logout</a></p>';
+        echo '</div>';
     } else {
     ?>
 

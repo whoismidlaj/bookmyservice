@@ -14,6 +14,7 @@ function create_booking_table()
         user_id BIGINT(20) NOT NULL,
         service VARCHAR(255) NOT NULL,
         booking_time DATETIME NOT NULL,
+        message  TEXT NOT NULL,
         PRIMARY KEY (id)
     ) $charset_collate;";
 
@@ -31,3 +32,18 @@ function bms_booking_page_shortcode()
     return ob_get_clean();
 }
 add_shortcode('book_my_service', 'bms_booking_page_shortcode');
+
+function bms_get_user_booked_services($user_id) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'bookings';
+
+    // Query to fetch bookings for the logged-in user
+    $results = $wpdb->get_results($wpdb->prepare("
+        SELECT service, booking_time, message
+        FROM $table_name
+        WHERE user_id = %d
+        ORDER BY booking_time DESC
+    ", $user_id));
+
+    return $results;
+}
