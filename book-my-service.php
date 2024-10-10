@@ -2,7 +2,7 @@
 /*
 Plugin Name: Book My Service
 Description: A plugin to allow users to book services and admins to manage bookings.
-Version: 1.0
+Version: 1.11
 Author: Midlaj M
 */
 
