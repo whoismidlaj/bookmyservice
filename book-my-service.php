@@ -9,7 +9,7 @@ Author: Midlaj M
 require_once plugin_dir_path( __FILE__ ) . '/includes/admin-functions.php';
 require_once plugin_dir_path( __FILE__ ) . '/includes/user-functions.php';
 require_once plugin_dir_path( __FILE__ ) . '/includes/booking-functions.php';
-require_once plugin_dir_path( __FILE__ ) . '/includes/email-functions.php';
+require_once plugin_dir_path( __FILE__ ) . 'google-api/src/Client.php';
 
 
 function bms_enqueue_assets()

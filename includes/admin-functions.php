@@ -74,3 +74,18 @@ function bms_submission_email() {
         echo '<p>Email saved successfully: ' . esc_html($email) . '</p>';
     }
 }
+
+
+function bms_save_google_oauth_credentials() {
+    if (isset($_POST['bms_client_id']) && !empty($_POST['bms_client_id'])) {
+        $bms_client_id = sanitize_text_field($_POST['bms_client_id']);
+        update_option('bms_client_id', $bms_client_id);
+        echo '<p>Client ID saved successfully: ' . esc_html($bms_client_id) . '</p>';
+    }
+
+    if (isset($_POST['bms_client_secret']) && !empty($_POST['bms_client_secret'])) {
+        $bms_client_secret = sanitize_text_field($_POST['bms_client_secret']);
+        update_option('bms_client_secret', $bms_client_secret);
+        echo '<p>Client Secret saved successfully: ' . esc_html($bms_client_secret) . '</p>';
+    }
+}

@@ -76,9 +76,12 @@ function bms_other_options() {
     bms_add_service();
     bms_delete_service();
     bms_submission_email();
+	bms_save_google_oauth_credentials();
 
     $services = get_option('bms_services', array());
     $email = get_option('bms_admin_email', '');
+	$bms_client_id = get_option('bms_client_id', '');
+	$bms_client_secret = get_option('bms_client_secret', '');
 
     echo '<h1>Options</h1>';
 
@@ -88,6 +91,26 @@ function bms_other_options() {
     echo '<input type="email" id="bms_email" name="bms_email" value="' . esc_attr($email) . '" required>';
     echo '<input type="submit" value="Save Email">';
     echo '</form>';
+	
+echo '<h2>Google OAuth Client</h2>';
+echo '<form method="POST" action="" style="display:inline;">';
+
+echo '<p>';
+echo '<label for="bms_client_id">Google Client ID:</label><br>';
+echo '<input type="text" id="bms_client_id" name="bms_client_id" value="' . esc_attr($bms_client_id) . '" required style="width: 100%; padding: 8px; margin: 5px 0;">';
+echo '</p>';
+
+echo '<p>';
+echo '<label for="bms_client_secret">Google Client Secret:</label><br>';
+echo '<input type="text" id="bms_client_secret" name="bms_client_secret" value="' . esc_attr($bms_client_secret) . '" required style="width: 100%; padding: 8px; margin: 5px 0;">';
+echo '</p>';
+
+echo '<p>';
+echo '<input type="submit" value="Save Credentials" style="padding: 8px 16px; background-color: #0073aa; color: white; border: none; cursor: pointer;">';
+echo '</p>';
+
+echo '</form>';
+
 
     echo '<h2>Services List</h2>';
     if (!empty($services)) {

@@ -3,6 +3,18 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+function bms_enqueue_google_signin() {
+    $client_id = get_option( 'bms_client_id', '' );
+
+    wp_enqueue_script('google-platform', 'https://apis.google.com/js/platform.js', array(), null, true);
+
+    add_action('wp_head', function() use ($client_id) {
+        echo '<meta name="google-signin-client_id" content="' . esc_attr($client_id) . '">';
+    });
+}
+add_action('wp_enqueue_scripts', 'bms_enqueue_google_signin');
+
+
 function bms_add_custom_user_role()
 {
     add_role(
@@ -79,3 +91,57 @@ function hide_admin_toolbar_for_bms_user()
     }
 }
 add_action('after_setup_theme', 'hide_admin_toolbar_for_bms_user');
+
+
+
+function bms_google_signup() {
+    if (isset($_POST['id_token'])) {
+        $id_token = sanitize_text_field($_POST['id_token']);
+        $client_id = get_option( 'bms_client_id', '' );
+
+        // Verify the token with Google
+        $client = new Google_Client(['client_id' => $client_id ]);
+        $payload = $client->verifyIdToken($id_token);
+
+        if ($payload) {
+            $email = $payload['email'];
+            $name = $payload['name'];
+            $username = strtolower(str_replace(' ', '_', $name));
+            $phone = ''; // You can prompt for the phone number if required
+
+            // Check if user exists
+            $user = get_user_by('email', $email);
+            if (!$user) {
+                // Create new user
+                $password = wp_generate_password();
+                $user_id = wp_create_user($username, $password, $email);
+
+                if (!is_wp_error($user_id)) {
+                    // Set user role and other metadata
+                    $user = new WP_User($user_id);
+                    $user->set_role('bms_user');
+                    update_user_meta($user_id, 'first_name', $name);
+                    if ($phone) {
+                        update_user_meta($user_id, 'phone', $phone);
+                    }
+
+                    // Automatically log the user in
+                    wp_set_current_user($user_id);
+                    wp_set_auth_cookie($user_id);
+                }
+            } else {
+                // User exists, log them in
+                wp_set_current_user($user->ID);
+                wp_set_auth_cookie($user->ID);
+            }
+
+            // Redirect user after successful signup/login
+            wp_send_json_success(['redirect_url' => home_url('/booking')]);
+        } else {
+            wp_send_json_error(['message' => 'Invalid ID token.']);
+        }
+    }
+    wp_die();
+}
+add_action('wp_ajax_google_signup', 'bms_google_signup');
+add_action('wp_ajax_nopriv_google_signup', 'bms_google_signup');

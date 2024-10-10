@@ -87,17 +87,91 @@
             <span class="login active">Login</span>
             <span class="signup">Sign Up</span>
         </div>
+	
+	<div class="login-section">
+    <h3>Login</h3>
+    <form method="post" action="<?php echo esc_url(wp_login_url()); ?>" id="login-form">
+        <p>
+            <label for="login_email">Email</label>
+            <input type="email" name="log" id="login_email" class="input" value="" size="20" required placeholder="Enter your email" />
+        </p>
+        <p>
+            <label for="user_pass">Password</label>
+            <input type="password" name="pwd" id="user_pass" class="input" value="" size="20" required placeholder="Enter your password" />
+        </p>
+        <p>
+            <input type="submit" value="Log In" />
+        </p>
+    </form>
+</div>
 
-        <div class="login-section">
+<div class="signup-section">
+    <h3>Sign Up</h3>
+    <form method="post" action="">
+        <p>
+            <label for="name">Name</label>
+            <input type="text" name="name" id="name" required />
+        </p>
+        <p>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" required />
+        </p>
+        <p>
+            <label for="phone">Phone Number</label>
+            <input type="text" name="phone" id="phone" required />
+        </p>
+        <p>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" required />
+        </p>
+        <p>
+            <input type="submit" name="register" value="Sign Up" />
+        </p>
+    </form>
+</div>
+
+<div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+
+<script>
+    function onSignIn(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    
+    // Get the ID token
+    var id_token = googleUser.getAuthResponse().id_token;
+
+    // Send ID token to server
+    jQuery.ajax({
+        type: 'POST',
+        url: '<?php echo admin_url("admin-ajax.php"); ?>',
+        data: {
+            action: 'google_signup',
+            id_token: id_token
+        },
+        success: function(response) {
+            if (response.success) {
+                window.location.href = response.data.redirect_url;
+            } else {
+                alert(response.data.message);
+            }
+        },
+        error: function() {
+            alert('Error while signing in with Google.');
+        }
+    });
+}
+
+</script>
+
+<!--         <div class="login-section">
             <h3>Login</h3>
-            <form method="post" action="<?php echo esc_url(wp_login_url()); ?>" id="login-form">
+            <form method="post" action="<?php // echo esc_url(wp_login_url()); ?>" id="login-form">
                 <p>
                     <label for="login_email">Email</label>
-                    <input type="email" name="log" id="login_email" class="input" value="" size="20" required />
+                    <input type="email" name="log" id="login_email" class="input" value="" size="20" required placeholder="Enter your email" />
                 </p>
                 <p>
                     <label for="user_pass">Password</label>
-                    <input type="password" name="pwd" id="user_pass" class="input" value="" size="20" required />
+                    <input type="password" name="pwd" id="user_pass" class="input" value="" size="20" required placeholder="Enter your password" />
                 </p>
                 <p>
                     <input type="submit" value="Log In" />
@@ -130,7 +204,7 @@
                 </p>
             </form>
         </div>
-
+ -->
         <script>
             jQuery(document).ready(function($) {
 
