@@ -37,7 +37,6 @@ function bms_get_user_booked_services($user_id) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'bookings';
 
-    // Query to fetch bookings for the logged-in user
     $results = $wpdb->get_results($wpdb->prepare("
         SELECT service, booking_time, message
         FROM $table_name

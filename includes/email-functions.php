@@ -5,7 +5,7 @@ function bms_generate_booking_email_content($booking_data) {
     $user_email = esc_html($user_info->user_email);
     $service = esc_html($booking_data['service']);
     $booking_time = date('F j, Y, g:i A', strtotime($booking_data['booking_time']));
-    $message = nl2br(esc_html($booking_data['message'])); // Convert newlines to <br> for better formatting
+    $message = nl2br(esc_html($booking_data['message']));
 
     $email_content = "
     <div style='font-family: Arial, sans-serif;'>
@@ -52,6 +52,5 @@ function bms_send_booking_email($booking_data) {
     $message = bms_generate_booking_email_content($booking_data);
     $headers = array('Content-Type: text/html; charset=UTF-8');
 
-    // Send the email
     wp_mail($admin_email, $subject, $message, $headers);
 }

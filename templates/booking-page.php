@@ -2,10 +2,10 @@
     <?php
     if (is_user_logged_in()) {
         $user_id = get_current_user_id();
-        
+
         // echo '<h3>Your Booked Services:</h3>';
         // $user_booked_services = bms_get_user_booked_services($user_id); // Fetch booked services
-        
+
         // if (!empty($user_booked_services)) {
         //     echo '<ul>';
         //     foreach ($user_booked_services as $service) {
