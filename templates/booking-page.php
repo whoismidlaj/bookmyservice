@@ -1,6 +1,8 @@
 <div class="bms_booking_wrapper">
     <?php
     if (is_user_logged_in()) {
+        session_start(); // Start the session
+
         $user_id = get_current_user_id();
     ?>
         <div class="tab-switch booked-switch">
@@ -11,7 +13,6 @@
         <div class="booking-menu-wrapper">
             <div class="booked-services-wrapper">
                 <?php
-
                 echo '<h3>Your Booked Services:</h3>';
                 $user_booked_services = bms_get_user_booked_services($user_id);
 
@@ -39,39 +40,65 @@
                     $selected_service = sanitize_text_field($_POST['service']);
                     $message = sanitize_textarea_field($_POST['message']);
 
-                    $booking_data = array(
-                        'user_id'       => $user_id,
-                        'service'       => $selected_service,
-                        'booking_time'  => current_time('mysql'),
-                        'message' => $message,
-                    );
+                    if (!empty($selected_service) && !empty($message)) {
+                        $booking_data = array(
+                            'user_id'      => $user_id,
+                            'service'      => $selected_service,
+                            'booking_time' => current_time('mysql'),
+                            'message'      => $message,
+                            'status'       => 'pending' // Default status
+                        );
 
-                    global $wpdb;
-                    $table_name = $wpdb->prefix . 'bookings';
+                        global $wpdb;
+                        $table_name = $wpdb->prefix . 'bookings';
 
-                    $wpdb->query("CREATE TABLE IF NOT EXISTS $table_name (
-            id BIGINT(20) NOT NULL AUTO_INCREMENT,
-            user_id BIGINT(20) NOT NULL,
-            service VARCHAR(255) NOT NULL,
-            booking_time DATETIME NOT NULL,
-            message  TEXT NOT NULL,
-            status VARCHAR(255) NOT NULL DEFAULT 'pending',
-            PRIMARY KEY (id)
-        )");
+                        // Ensure the table is created
+                        $wpdb->query("CREATE TABLE IF NOT EXISTS $table_name (
+                        id BIGINT(20) NOT NULL AUTO_INCREMENT,
+                        user_id BIGINT(20) NOT NULL,
+                        service VARCHAR(255) NOT NULL,
+                        booking_time DATETIME NOT NULL,
+                        message TEXT NOT NULL,
+                        status VARCHAR(255) NOT NULL DEFAULT 'pending',
+                        PRIMARY KEY (id)
+                    )");
 
-                    $wpdb->insert($table_name, $booking_data);
-                    bms_send_booking_email($booking_data);
+                        // Insert the booking data
+                        if ($wpdb->insert($table_name, $booking_data) === false) {
+                            // Log error if insertion fails
+                            echo 'Database insert error: ' . esc_html($wpdb->last_error);
+                        } else {
+                            // Send booking email
+                            bms_send_booking_email($booking_data);
 
-                    // form_success();
+                            // Store success message in session
+                            $_SESSION['booking_success'] = 'Your booking for "' . esc_html($selected_service) . '" has been successfully submitted.';
+
+                            // Redirect to the same page to prevent duplicate submissions
+                            wp_redirect(home_url('/booking'));
+                            exit; // Ensure no further code is executed
+                        }
+                    } else {
+                        if (empty($selected_service)) {
+                            echo '<p>Please select a service.</p>';
+                        }
+                        if (empty($message)) {
+                            echo '<p>Message is required.</p>';
+                        }
+                    }
                 }
 
-
+                // Check if there's a success message in the session and display it
+                if (isset($_SESSION['booking_success'])) {
+                    echo '<p class="success-message">' . $_SESSION['booking_success'] . '</p>';
+                    unset($_SESSION['booking_success']); // Clear the session message after displaying
+                }
 
                 $services = get_option('bms_services', array());
 
                 echo '<form method="post" action="">
-            <label for="service">Select your service:</label>
-            <select name="service">';
+                <label for="service">Select your service:</label>
+                <select name="service" required>';
 
                 if (!empty($services)) {
                     foreach ($services as $service) {
@@ -81,13 +108,13 @@
                     echo '<option value="">No services available</option>';
                 }
 
-                echo '  </select>
-        <p>
-            <label for="message">Additional Message</label>
-            <textarea name="message" id="message" rows="5" cols="40"></textarea>
-        </p>
-            <p><input type="submit" value="Book Service"></p>
-          </form>';
+                echo '</select>
+                <p>
+                    <label for="message">Additional Message</label>
+                    <textarea name="message" id="message" rows="5" cols="40"></textarea>
+                </p>
+                <p><input type="submit" value="Book Service"></p>
+            </form>';
 
                 echo '<p style="margin-top: 2em"><a class="logout_btn" href="' . wp_logout_url(home_url('/booking')) . '">Logout</a></p>';
                 echo '</div>';
@@ -111,80 +138,28 @@
                         });
 
                         $('.book-your-service-wrapper form').on('submit', function(event) {
-                            event.preventDefault();
+                            event.preventDefault(); // Prevent default form submission
+
                             let isValid = true;
-                            $('.error-message').remove();
+                            $('.error-message').remove(); // Remove previous error messages
 
                             const message = $('#message').val().trim();
                             if (message === '') {
                                 $('<span class="error-message" style="color: red;">Message is required.</span>').insertAfter('#message');
-                                isValid = false;
+                                isValid = false; // Set valid to false
                             }
 
-                            const selectedService = $('.nice-select .current').text();
+                            const selectedService = $(this).find('select[name="service"]').val();
                             if (!selectedService) {
-                                $('<span class="error-message" style="color: red;">Please select a service.</span>').insertAfter('.nice-select');
-                                isValid = false;
+                                $('<span class="error-message" style="color: red;">Please select a service.</span>').insertAfter($(this).find('select[name="service"]'));
+                                isValid = false; // Set valid to false
                             }
 
-                            if (!isValid) {
-                                return;
+                            if (isValid) {
+                                this.submit(); // Only submit if valid
                             }
-
-                            // $('.book-your-service-wrapper input[type="submit"]').prop('disabled', true);
-                            $('.book-your-service-wrapper form')[0].reset();
-                            $('.nice-select .current').text('Service 1');
-                            $('.nice-select .option').removeClass('selected').filter('[data-value="Service 1"]').addClass('selected');
-
-                            const successMessage = $('<p class="success-message"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>Your booking for "' + selectedService + '" has been successfully submitted.</p>');
-                            $('.book-your-service-wrapper').prepend(successMessage);
-
-                            setTimeout(function() {
-                                $('.success-message').fadeOut('slow', function() {
-                                    $(this).remove();
-                                });
-                            }, 10000);
                         });
 
-                        $('.nice-select .list .option').on('click', function() {
-                            const selectedService = $(this).data('value');
-                            $('select[name="service"]').val(selectedService);
-                            $('.nice-select .current').text(selectedService);
-                            $('.nice-select .option').removeClass('selected');
-                            $(this).addClass('selected');
-                        });
-
-                        // $('.book-your-service-wrapper form').on('submit', function(event) {
-                        //     event.preventDefault();
-                        //     let form = $(this);
-                        //     let formData = form.serialize();
-
-                        //     $.ajax({
-                        //         url: form.attr('action'),
-                        //         type: 'POST',
-                        //         data: formData,
-                        //         success: function(response) {
-                        //             if (response.success) {
-                        //                 form[0].reset();
-                        //                 $('.nice-select .current').text('Service 1');
-                        //                 $('.nice-select .option').removeClass('selected').filter('[data-value="Service 1"]').addClass('selected');
-
-                        //                 const successMessage = $('<div class="updated"><p>' + response.data.message + '</p></div>');
-                        //                 $('.book-your-service-wrapper').prepend(successMessage);
-
-                        //                 setTimeout(function() {
-                        //                     successMessage.fadeOut('slow', function() {
-                        //                         $(this).remove();
-                        //                     });
-                        //                 }, 5000);
-                        //             }
-                        //         },
-                        //         error: function(xhr) {
-                        //             console.error('AJAX Error:', xhr.responseText);
-                        //             alert('There was an error processing your request. Please try again later.');
-                        //         }
-                        //     });
-                        // });
                     });
                 </script>
             </div>
