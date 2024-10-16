@@ -149,7 +149,6 @@ function bms_other_options() {
         echo '<p>No services added yet.</p>';
     }
 
-
     echo '<h3>Add New Service</h3>';
     echo '<form method="POST" action="">';
     echo '<table class="form-table">';
@@ -162,4 +161,15 @@ function bms_other_options() {
     echo '</table>';
     echo '<p><input type="submit" name="add_service" class="button-primary" value="Add Service"></p>';
     echo '</form>';
+
+    echo '<h3>Reset Booking Table</h3>';
+    echo '<form method="POST" action="">';
+    echo '<p><input type="submit" name="reset_booking_table" class="button-secondary" value="Reset Booking Table" onclick="return confirm(\'Are you sure you want to reset the booking table? All data will be lost.\');"></p>';
+    echo '</form>';
+
+    // Handle reset request
+    if (isset($_POST['reset_booking_table'])) {
+        reset_booking_table(); // Call the reset function
+        echo '<div class="updated"><p>Booking table has been reset.</p></div>';
+    }
 }

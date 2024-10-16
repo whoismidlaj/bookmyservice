@@ -66,3 +66,15 @@ function form_success() {
     // After processing, send a JSON response
     wp_send_json_success(['message' => 'Your booking for "' . esc_html($selected_service) . '" has been successfully submitted.']);
 }
+
+function reset_booking_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'bookings';
+
+    // Drop the existing table
+    $sql = "DROP TABLE IF EXISTS $table_name;";
+    $wpdb->query($sql);
+
+    // Recreate the table
+    create_booking_table(); // Call the existing function to recreate the table
+}
