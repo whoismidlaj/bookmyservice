@@ -27,3 +27,24 @@
 .bms_options thead {
     border-bottom: 1px solid rgba(0,0,0,0.2);
 }
+
+.table-responsive {
+    overflow-x: auto; /* Enable horizontal scrolling */
+}
+
+.widefat {
+    width: 100%; /* Make the table take full width */
+    border-collapse: collapse; /* Collapse borders for cleaner look */
+}
+
+.widefat th, .widefat td {
+    padding: 10px; /* Add some padding */
+    text-align: left; /* Align text to the left */
+    min-width: 150px; /* Minimum width for each column */
+}
+
+@media (max-width: 768px) {
+    .widefat th, .widefat td {
+        min-width: 120px; /* Adjust minimum width for smaller screens */
+    }
+}

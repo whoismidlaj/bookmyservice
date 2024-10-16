@@ -15,6 +15,7 @@ function create_booking_table()
         service VARCHAR(255) NOT NULL,
         booking_time DATETIME NOT NULL,
         message  TEXT NOT NULL,
+        status VARCHAR(255) NOT NULL DEFAULT 'pending',
         PRIMARY KEY (id)
     ) $charset_collate;";
 
@@ -38,11 +39,30 @@ function bms_get_user_booked_services($user_id) {
     $table_name = $wpdb->prefix . 'bookings';
 
     $results = $wpdb->get_results($wpdb->prepare("
-        SELECT service, booking_time, message
+        SELECT service, booking_time, message, status
         FROM $table_name
         WHERE user_id = %d
         ORDER BY booking_time DESC
     ", $user_id));
 
     return $results;
+}
+
+add_action('wp_ajax_your_ajax_action', 'form_success'); // For logged-in users
+add_action('wp_ajax_nopriv_your_ajax_action', 'form_success'); // For logged-out users
+
+function form_success() {
+    // Validate your input and process data here
+    $selected_service = isset($_POST['service']) ? sanitize_text_field($_POST['service']) : '';
+
+    if (empty($selected_service)) {
+        wp_send_json_error(['message' => 'Service is required.']);
+        exit;
+    }
+
+    // Process booking, send email, etc.
+    // Assuming you have code here to insert into the database
+    $output = ob_get_clean();
+    // After processing, send a JSON response
+    wp_send_json_success(['message' => 'Your booking for "' . esc_html($selected_service) . '" has been successfully submitted.']);
 }

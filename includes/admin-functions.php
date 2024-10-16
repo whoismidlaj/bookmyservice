@@ -74,3 +74,4 @@ function bms_submission_email() {
         echo '<p>Email saved successfully: ' . esc_html($email) . '</p>';
     }
 }
+

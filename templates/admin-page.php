@@ -9,14 +9,15 @@ function bms_admin_page() {
         <h1>Book My Service Admin</h1>
         <h2 class="nav-tab-wrapper">
             <a href="?page=book-my-service&tab=bookings" class="nav-tab <?php echo ( isset( $_GET['tab']) && $_GET['tab'] === 'bookings' ) ? 'nav-tab-active' : ''; ?>">Bookings</a>
-            <a href="?page=book-my-service&tab=user-list" class="nav-tab <?php echo ( isset( $_GET['tab']) && $_GET['tab'] === 'user-list' ) ? 'nav-tab-active' : ''; ?>">User List</a>
+            <!-- <a href="?page=book-my-service&tab=user-list" class="nav-tab <?php // echo ( isset( $_GET['tab']) && $_GET['tab'] === 'user-list' ) ? 'nav-tab-active' : ''; ?>">User List</a> -->
             <a href="?page=book-my-service&tab=options" class="nav-tab <?php echo ( isset( $_GET['tab']) && $_GET['tab'] === 'options' ) ? 'nav-tab-active' : ''; ?>">Options</a>
         </h2>
 
         <?php
-        if ( isset( $_GET['tab'] ) && $_GET['tab'] === 'user-list' ) {
-            bms_user_list();
-        } else if ( isset( $_GET['tab'] ) && $_GET['tab'] === 'options' ) {
+        // if ( isset( $_GET['tab'] ) && $_GET['tab'] === 'user-list' ) {
+        //     bms_user_list();
+        // } else 
+        if ( isset( $_GET['tab'] ) && $_GET['tab'] === 'options' ) {
             bms_other_options();
         } else {
             display_bookings();
@@ -34,11 +35,29 @@ function display_bookings() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'bookings';
 
-    $bookings = $wpdb->get_results("SELECT b.id, b.service, b.booking_time, b.message,u.user_email, u.ID as user_id FROM $table_name b JOIN $wpdb->users u ON b.user_id = u.ID ORDER BY b.booking_time DESC", ARRAY_A);
+    // Handle form submission and update status
+    if (isset($_POST['save_service_changes']) && isset($_POST['status'])) {
+        foreach ($_POST['status'] as $booking_id => $new_status) {
+            $wpdb->update(
+                $table_name,
+                array('status' => sanitize_text_field($new_status)),
+                array('id' => intval($booking_id)),
+                array('%s'),
+                array('%d')
+            );
+        }
+        echo '<div class="updated notice"><p>Statuses updated successfully.</p></div>';
+    }
 
+    // Fetch bookings
+    $bookings = $wpdb->get_results("SELECT b.id, b.service, b.booking_time, b.message, b.status, u.user_email, u.ID as user_id FROM $table_name b JOIN $wpdb->users u ON b.user_id = u.ID ORDER BY b.booking_time DESC", ARRAY_A);
+
+    // Display bookings
     if (!empty($bookings)) {
         echo '<h2>All Bookings</h2>';
-        echo '<table class="widefat fixed" cellspacing="0">';
+        echo '<form method="post">';
+        echo '<div class="table-responsive">'; // Responsive container
+        echo '<table class="widefat" cellspacing="0">';
         echo '<thead>';
         echo '<tr>';
         echo '<th scope="col">Name</th>';
@@ -47,14 +66,22 @@ function display_bookings() {
         echo '<th scope="col">Service Selected</th>';
         echo '<th scope="col">Booking Time</th>';
         echo '<th scope="col">Message</th>';
+        echo '<th scope="col">Status</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
         
         foreach ($bookings as $booking) {
-            $first_name = get_user_meta($booking['user_id'], 'first_name', true);
-            $phone = get_user_meta($booking['user_id'], 'phone', true);
-
+            $first_name = !empty(get_user_meta($booking['user_id'], 'first_name', true)) 
+            ? get_user_meta($booking['user_id'], 'first_name', true) 
+            : (!empty(get_user_meta($booking['user_id'], 'nickname', true)) 
+                ? get_user_meta($booking['user_id'], 'nickname', true) 
+                : 'No Name');
+    
+            $phone = !empty(get_user_meta($booking['user_id'], 'phone', true)) ? get_user_meta($booking['user_id'], 'phone', true) : null;
+            
+            $status = !empty($booking['status']) ? $booking['status'] : 'Pending';
+            
             echo '<tr>';
             echo '<td>' . esc_html($first_name) . '</td>';
             echo '<td>' . esc_html($booking['user_email']) . '</td>';
@@ -62,14 +89,25 @@ function display_bookings() {
             echo '<td>' . esc_html($booking['service']) . '</td>';
             echo '<td>' . esc_html(date('F j, Y, g:i A', strtotime($booking['booking_time']))) . '</td>';
             echo '<td>' . esc_html($booking['message']) . '</td>';
+    
+            echo '<td>';
+            echo '<select name="status[' . esc_attr($booking['id']) . ']">';
+            echo '<option value="Pending"' . selected($status, 'Pending', false) . '>Pending</option>';
+            echo '<option value="Completed"' . selected($status, 'Completed', false) . '>Completed</option>';
+            echo '</select>';
+            echo '</td>';
             echo '</tr>';
         }
         
         echo '</tbody>';
         echo '</table>';
+        echo '</div>'; // End responsive container
+        echo '<p><input type="submit" name="save_service_changes" class="button-primary" value="Save Changes"></p>';
+        echo '</form>';
     } else {
         echo '<h2>No bookings found.</h2>';
     }
+    
 }
 
 function bms_other_options() {
